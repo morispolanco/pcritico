@@ -9,7 +9,8 @@ const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/
 export default async function handler(request, response) {
 
     // 1. Configurar Headers CORS (permisivo ya que se sirve desde el mismo dominio Vercel)
-    response.setHeader('Access-Control-Allow-Origin', '*');
+    //    Aunque sea el mismo dominio, es buena práctica incluirlos para OPTIONS.
+    response.setHeader('Access-Control-Allow-Origin', '*'); // O tu dominio Vercel específico si prefieres
     response.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -97,7 +98,7 @@ export default async function handler(request, response) {
          ]
     };
 
-    // 7. Llamar a la API de Gemini
+    // 7. Llamar a la API de Gemini y procesar la respuesta
     try {
         console.log(`Llamando a Gemini para tipo: ${chosenType}`);
         const geminiResponse = await fetch(GEMINI_API_URL, {
@@ -107,70 +108,105 @@ export default async function handler(request, response) {
         });
 
         console.log("Respuesta de Gemini recibida. Status:", geminiResponse.status);
-        const responseBody = await geminiResponse.text(); // Leer como texto para depurar
 
+        // --- INICIO CORRECCIÓN: Procesar respuesta completa de Gemini ---
         if (!geminiResponse.ok) {
-            console.error(`Error de la API de Gemini (${geminiResponse.status}):`, responseBody);
+            const errorBody = await geminiResponse.text(); // Leer cuerpo para detalles
+            console.error(`Error de la API de Gemini (${geminiResponse.status}):`, errorBody);
             let errorMsg = `Error ${geminiResponse.status} de la API de Gemini.`;
             try {
-                 const errorJson = JSON.parse(responseBody);
-                 // Extraer mensaje de error específico si existe
-                 if (errorJson && errorJson.error && errorJson.error.message) {
-                     errorMsg = errorJson.error.message;
-                 } else if (errorJson && errorJson.message) { // A veces el error está en .message
-                     errorMsg = errorJson.message;
-                 }
-            } catch (e) { /* Ignorar si el cuerpo de error no es JSON */ }
-            // Añadir info si fue bloqueo de seguridad
-            if (responseBody.includes("SAFETY")) {
-                errorMsg += " (Posible bloqueo por filtros de seguridad)";
+                const errorJson = JSON.parse(errorBody);
+                if (errorJson?.error?.message) { errorMsg = errorJson.error.message; }
+                else if (errorJson?.message) { errorMsg = errorJson.message; }
+            } catch (e) { /* Ignorar si no es JSON */ }
+            if (errorBody.includes("SAFETY") || errorBody.includes("blockReason")) {
+                errorMsg += " (Posible bloqueo por filtros de seguridad o contenido)";
             }
             throw new Error(errorMsg);
         }
 
-        // Si la respuesta es OK, intentar parsear como JSON
-        console.log("Datos crudos de Gemini (OK):", responseBody.substring(0, 300) + "..."); // Loguear solo el inicio
-        let generatedText = responseBody.trim();
+        // Si es OK, parsear la respuesta COMPLETA de Gemini como JSON
+        const geminiData = await geminiResponse.json();
+        console.log("Datos JSON completos de Gemini recibidos."); // Log simplificado
 
-         // Limpieza robusta del JSON (quitar ```json ... ``` o solo ``` ... ```)
+        // Extraer el texto relevante que CONTIENE el JSON del ejercicio
+        // Añadir verificaciones más robustas
+        if (!geminiData.candidates || !Array.isArray(geminiData.candidates) || geminiData.candidates.length === 0) {
+             console.error("Respuesta de Gemini sin 'candidates' válidos:", geminiData);
+             throw new Error("La respuesta de la API no contiene candidatos válidos.");
+        }
+
+        const candidate = geminiData.candidates[0];
+
+         // Verificar si fue bloqueado por seguridad u otro motivo
+         if (candidate.finishReason && candidate.finishReason !== "STOP") {
+             console.warn(`Gemini terminó con razón: ${candidate.finishReason}. Revisar safetyRatings si existen.`);
+             if (candidate.safetyRatings) {
+                 console.warn("Safety Ratings:", candidate.safetyRatings);
+             }
+             // Podrías lanzar un error aquí si finishReason no es STOP, dependiendo de tu caso de uso
+             // throw new Error(`Generación detenida por Gemini. Razón: ${candidate.finishReason}`);
+         }
+
+
+        if (!candidate.content || !candidate.content.parts || !Array.isArray(candidate.content.parts) || candidate.content.parts.length === 0 || !candidate.content.parts[0].text) {
+            console.error("Estructura de respuesta de Gemini inesperada (faltan partes de contenido):", geminiData);
+             // Revisar feedback del prompt si existe
+            if (geminiData.promptFeedback && geminiData.promptFeedback.blockReason) {
+                 throw new Error(`Solicitud bloqueada por Gemini. Razón: ${geminiData.promptFeedback.blockReason}`);
+            }
+            throw new Error("Formato de respuesta inesperado de la API de Gemini.");
+        }
+
+        let generatedText = candidate.content.parts[0].text;
+        console.log("Texto crudo extraído:", generatedText.substring(0, 100) + "..."); // Loguear inicio
+
+        // Limpiar los ```json ... ``` de ESTE TEXTO EXTRAÍDO
+        generatedText = generatedText.trim();
         if (generatedText.startsWith("```json")) {
             generatedText = generatedText.substring(7).replace(/```$/, '').trim();
         } else if (generatedText.startsWith("```")) {
-            generatedText = generatedText.substring(3).replace(/```$/, '').trim();
+             generatedText = generatedText.substring(3).replace(/```$/, '').trim();
         }
+         console.log("Texto limpiado para parsear:", generatedText.substring(0, 100) + "...");
 
-        // 8. Parsear y validar el JSON del ejercicio
+        // --- FIN CORRECCIÓN ---
+
+        // 8. Parsear y validar el JSON del ejercicio (el que estaba dentro de 'text')
         try {
-            const exerciseData = JSON.parse(generatedText);
-            console.log("JSON parseado:", exerciseData);
+            const exerciseData = JSON.parse(generatedText); // Parsear el string que contiene el ejercicio
+            console.log("JSON del ejercicio parseado con éxito.");
 
-            // Validación robusta
+            // Validación robusta de la estructura final
             if (!exerciseData || typeof exerciseData.argument !== 'string' || !exerciseData.argument ||
                 typeof exerciseData.question !== 'string' || !exerciseData.question ||
                 !Array.isArray(exerciseData.options) || exerciseData.options.length !== 4 ||
-                !exerciseData.options.every(opt => typeof opt === 'string' && opt) ||
+                !exerciseData.options.every(opt => typeof opt === 'string' && opt) || // Opciones no vacías
                 typeof exerciseData.correct_option_index !== 'number' ||
                 exerciseData.correct_option_index < 0 || exerciseData.correct_option_index >= 4 ||
                 typeof exerciseData.explanation !== 'string' || !exerciseData.explanation)
             {
-                console.error("El JSON parseado no cumple la estructura esperada:", exerciseData);
+                console.error("El JSON del ejercicio parseado no cumple la estructura esperada:", exerciseData);
                 throw new Error("El formato del JSON generado por la IA es incorrecto o incompleto.");
             }
 
-
-             // 9. Devolver el ejercicio al frontend
+             // 9. Devolver el ejercicio parseado al frontend
              console.log("Devolviendo ejercicio válido al frontend.");
-             response.status(200).json(exerciseData); // Enviar el objeto JSON
+             response.status(200).json(exerciseData); // Enviar el objeto ejercicio
 
         } catch (parseError) {
-             console.error("Error al parsear JSON del ejercicio:", parseError);
-             console.error("Texto que falló el parseo:", generatedText);
-             throw new Error(`No se pudo interpretar la respuesta de la IA como JSON válido. Inicio: ${generatedText.substring(0,100)}...`);
+             // Este catch ahora maneja errores al parsear el JSON *interno*
+             console.error("Error al parsear JSON del ejercicio extraído:", parseError);
+             console.error("Texto que falló el parseo:", generatedText); // Loguear texto problemático
+             // Devolver un error más específico
+             throw new Error(`No se pudo interpretar el texto de la IA como JSON de ejercicio válido. Inicio: ${generatedText.substring(0,100)}...`);
         }
 
     } catch (error) {
-        console.error("Error en la ejecución de la función serverless:", error);
-        // Enviar error genérico al cliente
+        // Este catch maneja errores de red, errores de Gemini (no OK),
+        // o errores lanzados durante la extracción/parseo interno.
+        console.error("Error final en la ejecución de la función serverless:", error);
+        // Enviar el mensaje de error específico al cliente si es posible
         response.status(500).json({ error: error.message || 'Ocurrió un error interno en el servidor.' });
     }
-}
+} // Fin del handler exportado
