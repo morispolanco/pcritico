@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pensamiento Crítico (Vercel Full Deploy)</title>
+    <style>
+        /* --- INICIO CSS --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 15px;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+            color: #212529;
+            transition: background-color 0.3s ease; /* Suave transición */
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+            border: 1px solid #dee2e6;
+            transition: box-shadow 0.3s ease;
+        }
+        .container:hover {
+             box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #343a40;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.9em;
+            font-weight: 600;
+        }
+
+        h2 {
+            color: #495057;
+            margin-top: 25px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            font-weight: 500;
+        }
+
+        /* Quitamos la advertencia de seguridad, ya no es necesaria aquí */
+
+        #progress-area {
+            margin-bottom: 25px;
+            font-size: 1em;
+            color: #6c757d;
+            text-align: right;
+            font-weight: 500;
+        }
+
+        .message-area {
+            margin-top: 20px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+
+        #loading-error-area.loading {
+            background-color: #eef1f4; /* Color más suave */
+            color: #495057;
+            text-align: center;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        #loading-error-area.error {
+            background-color: #f8d7da;
+            color: #721c24; /* Texto más oscuro para contraste */
+            border-color: #f5c6cb;
+            font-weight: 500; /* Ligeramente menos grueso */
+        }
+        #loading-error-area.error::before {
+            content: "⚠️ "; /* Icono de advertencia */
+            font-weight: bold;
+        }
+
+
+        .argument {
+            background-color: #e9ecef;
+            padding: 18px; /* Más padding */
+            border-left: 6px solid #0d6efd;
+            margin-bottom: 25px;
+            border-radius: 4px;
+            font-style: italic;
+            line-height: 1.7; /* Mejor lectura */
+            color: #343a40;
+        }
+         .argument strong {
+             font-style: normal;
+             font-weight: 600;
+             display: block;
+             margin-bottom: 5px;
+             color: #212529;
+         }
+
+        .question {
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 1.15em;
+            color: #495057;
+        }
+
+        .options label {
+            display: block;
+            background-color: #f8f9fa;
+            padding: 12px 18px; /* Más padding */
+            margin-bottom: 12px;
+            border-radius: 6px; /* Más redondeado */
+            border: 1px solid #dee2e6;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, transform 0.1s ease;
+        }
+
+        .options label:hover {
+            background-color: #e9ecef; /* Cambio más notable */
+            border-color: #adb5bd;
+            transform: translateY(-1px); /* Ligero efecto hover */
+        }
+         .options label input[type="radio"]:checked + span {
+             font-weight: 600; /* Resaltar texto de opción seleccionada */
+         }
+
+
+        .options input[type="radio"] {
+            margin-right: 14px;
+            transform: scale(1.15);
+            vertical-align: middle;
+        }
+
+        button[type="submit"], .nav-button {
+            background-color: #0d6efd;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px; /* Más redondeado */
+            cursor: pointer;
+            font-size: 1.05em; /* Ligeramente más grande */
+            font-weight: 500;
+            margin-top: 20px;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            display: block;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+        }
+        .nav-button {
+             width: auto;
+             display: inline-block;
+             margin-right: 10px;
+             min-width: 150px;
+        }
+
+        button[type="submit"]:hover, .nav-button:hover {
+            background-color: #0b5ed7;
+            transform: translateY(-1px);
+             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button:disabled {
+            background-color: #adb5bd;
+            cursor: not-allowed;
+             transform: none;
+             box-shadow: none;
+        }
+
+
+        .feedback {
+            border-width: 1px; /* Borde más sutil */
+            border-style: solid;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Sombra suave */
+        }
+        .feedback.correct {
+            border-color: #badbcc; /* Borde más suave */
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+        .feedback.incorrect {
+            border-color: #f5c2c7; /* Borde más suave */
+            background-color: #f8d7da;
+            color: #842029;
+        }
+
+        .feedback h3 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 1.25em;
+            font-weight: 600;
+        }
+        .feedback p {
+            margin-bottom: 8px;
+            line-height: 1.7;
+        }
+         .feedback strong {
+             font-weight: 600;
+         }
+
+        #next-btn {
+            background-color: #198754; /* Verde éxito */
+        }
+        #next-btn:hover {
+            background-color: #157347;
+        }
+
+        .reset {
+            background-color: #6c757d; /* Gris neutro */
+        }
+        .reset:hover {
+            background-color: #5c636a;
+        }
+
+        .final-message {
+            text-align: center;
+            font-size: 1.2em;
+            background-color: #d1e7dd;
+            border: 1px solid #badbcc;
+            color: #0f5132;
+        }
+        .final-message h2 {
+            color: #0f5132;
+            border-bottom: none;
+            margin-bottom: 10px;
+        }
+
+        hr {
+            border: 0;
+            height: 1px;
+            background-color: #dee2e6;
+            margin: 25px 0;
+        }
+
+        /* Feedback options */
+        .options-feedback {
+             margin-top: 15px;
+        }
+        .options-feedback label {
+            cursor: default;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            margin-bottom: 8px;
+            padding: 10px 15px; /* Un poco menos padding que las seleccionables */
+            transition: none; /* Sin transiciones */
+            transform: none; /* Sin transform */
+        }
+        .options-feedback label:hover {
+            background-color: #f8f9fa; /* Sin efecto hover */
+            border-color: #dee2e6;
+             transform: none;
+        }
+        .options-feedback .correct-answer {
+            border-color: #198754;
+            background-color: #cff6dd; /* Verde más vibrante */
+            font-weight: 600; /* Más grueso */
+             color: #0f5132;
+             border-width: 2px;
+        }
+        .options-feedback .user-incorrect-choice {
+            border-color: #dc3545;
+            background-color: #fadde1; /* Rosa más vibrante */
+            text-decoration: line-through;
+            color: #842029;
+             border-width: 2px;
+        }
+        .options-feedback .user-incorrect-choice em {
+            font-style: normal;
+            text-decoration: none;
+            margin-left: 8px;
+            font-weight: 500;
+            background-color: rgba(255, 255, 255, 0.6); /* Fondo semitransparente */
+            padding: 1px 4px;
+            border-radius: 3px;
+        }
+        .options-feedback .correct-answer strong {
+             margin-left: 8px;
+             background-color: rgba(255, 255, 255, 0.6);
+             padding: 1px 4px;
+             border-radius: 3px;
+        }
+        /* Ocultar radios en feedback - redundante con CSS anterior pero seguro */
+        .options-feedback input[type="radio"] {
+            display: none;
+        }
+
+
+        .controls {
+            margin-top: 30px;
+            text-align: center;
+        }
+        /* --- FIN CSS --- */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 Ejercicio de Pensamiento Crítico 💡</h1>
+
+        <div id="progress-area">
+            Progreso: <span id="progress-count">0</span> / 50
+        </div>
+
+        <div id="loading-error-area" class="message-area" style="display: none;">
+            <!-- Mensajes de carga o error aquí -->
+        </div>
+
+        <div id="exercise-area" style="display: none;">
+             <div class="argument">
+                 <strong>Analiza el siguiente argumento:</strong>
+                 <span id="argument-text"></span> <!-- El argumento se cargará aquí -->
+            </div>
+            <p class="question" id="question-text">
+                <!-- La pregunta se cargará aquí -->
+            </p>
+            <form id="exercise-form">
+                <div id="options-container" class="options">
+                    <!-- Las opciones se cargarán aquí -->
+                </div>
+                <button type="submit" id="submit-btn">Enviar Respuesta</button>
+            </form>
+        </div>
+
+        <div id="feedback-area" class="message-area feedback" style="display: none;">
+            <h3 id="feedback-result"></h3>
+            <p><strong>Explicación:</strong> <span id="feedback-explanation"></span></p>
+
+            <div id="feedback-options-display" class="options options-feedback">
+                 <!-- Opciones con resaltado se mostrarán aquí -->
+            </div>
+             <hr>
+             <div style="text-align: center;">
+                <button id="next-btn" class="nav-button">Siguiente Pregunta →</button>
+            </div>
+        </div>
+
+        <div id="completion-area" class="message-area final-message" style="display: none;">
+             <h2>¡Felicidades! 🎉</h2>
+             <p>Has completado los 50 ejercicios.</p>
+             <button id="reset-btn-completion" class="nav-button reset">Comenzar de Nuevo</button>
+        </div>
+
+        <div class="controls">
+             <button id="reset-btn-main" class="nav-button reset">Reiniciar Ejercicio</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- INICIO JAVASCRIPT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Configuración ---
+            // La URL de la API apunta a la función serverless dentro del mismo despliegue de Vercel
+            const API_URL = "/api/generate-exercise"; // Ruta relativa a la función
+            const MAX_QUESTIONS = 50;
+
+            // --- Referencias a Elementos del DOM ---
+            const progressCountEl = document.getElementById('progress-count');
+            const loadingErrorAreaEl = document.getElementById('loading-error-area');
+            const exerciseAreaEl = document.getElementById('exercise-area');
+            const argumentTextEl = document.getElementById('argument-text'); // Span dentro del div argument
+            const questionTextEl = document.getElementById('question-text');
+            const optionsContainerEl = document.getElementById('options-container');
+            const exerciseFormEl = document.getElementById('exercise-form');
+            const submitBtnEl = document.getElementById('submit-btn');
+            const feedbackAreaEl = document.getElementById('feedback-area');
+            const feedbackResultEl = document.getElementById('feedback-result');
+            const feedbackExplanationEl = document.getElementById('feedback-explanation');
+            const feedbackOptionsDisplayEl = document.getElementById('feedback-options-display');
+            const nextBtnEl = document.getElementById('next-btn');
+            const completionAreaEl = document.getElementById('completion-area');
+            const resetBtnCompletionEl = document.getElementById('reset-btn-completion');
+            const resetBtnMainEl = document.getElementById('reset-btn-main');
+
+             // --- Estado de la Aplicación ---
+            let currentQuestionNumber = 0;
+            let currentExerciseData = null;
+            let isLoading = false;
+
+            // --- Funciones Auxiliares UI ---
+            function showLoading(message = "🔄 Cargando ejercicio...") {
+                loadingErrorAreaEl.textContent = message;
+                loadingErrorAreaEl.className = 'message-area loading';
+                loadingErrorAreaEl.style.display = 'block';
+                exerciseAreaEl.style.display = 'none';
+                feedbackAreaEl.style.display = 'none';
+                completionAreaEl.style.display = 'none';
+                submitBtnEl.disabled = true;
+                nextBtnEl.disabled = true;
+                isLoading = true;
+            }
+
+            function showError(message) {
+                loadingErrorAreaEl.textContent = message; // No añadir prefijo aquí, ya está en CSS
+                loadingErrorAreaEl.className = 'message-area error';
+                loadingErrorAreaEl.style.display = 'block';
+                exerciseAreaEl.style.display = 'none';
+                feedbackAreaEl.style.display = 'none';
+                completionAreaEl.style.display = 'none';
+                submitBtnEl.disabled = true;
+                nextBtnEl.disabled = true;
+                isLoading = false;
+                console.error("Error presentado al usuario:", message);
+            }
+
+             function hideLoadingError() {
+                loadingErrorAreaEl.style.display = 'none';
+                 // No resetear isLoading aquí automáticamente, fetch lo hará en finally
+            }
+
+             // --- Funciones Principales ---
+
+            async function fetchExercise() {
+                if (isLoading) {
+                    console.warn("Fetch iniciado mientras ya estaba cargando.");
+                    return;
+                }
+
+                currentQuestionNumber++;
+                progressCountEl.textContent = currentQuestionNumber;
+                showLoading(`🔄 Cargando ejercicio ${currentQuestionNumber}/${MAX_QUESTIONS}...`);
+
+                try {
+                    console.log(`Solicitando ejercicio ${currentQuestionNumber} a ${API_URL}`);
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        // No se envía body ya que la función genera el prompt
+                    });
+
+                    console.log(`Respuesta recibida de ${API_URL}: Status ${response.status}`);
+                    const data = await response.json(); // Siempre esperamos JSON
+
+                    if (!response.ok) {
+                        console.error(`Error del API (${response.status}):`, data.error || data);
+                        throw new Error(data.error || `Error ${response.status} recibido de la API.`);
+                    }
+
+                    currentExerciseData = data;
+                    console.log(`Ejercicio ${currentQuestionNumber} recibido:`, currentExerciseData);
+
+                    // Validación robusta de la estructura recibida
+                    if (!currentExerciseData || typeof currentExerciseData.argument !== 'string' || !currentExerciseData.argument ||
+                        typeof currentExerciseData.question !== 'string' || !currentExerciseData.question ||
+                        !Array.isArray(currentExerciseData.options) || currentExerciseData.options.length !== 4 ||
+                        !currentExerciseData.options.every(opt => typeof opt === 'string' && opt) ||
+                        typeof currentExerciseData.correct_option_index !== 'number' ||
+                        currentExerciseData.correct_option_index < 0 || currentExerciseData.correct_option_index >= 4 ||
+                        typeof currentExerciseData.explanation !== 'string' || !currentExerciseData.explanation)
+                    {
+                        console.error("Datos de ejercicio inválidos recibidos:", currentExerciseData);
+                        throw new Error("El formato del ejercicio recibido es incorrecto o incompleto.");
+                    }
+
+
+                    hideLoadingError();
+                    displayExercise(currentExerciseData);
+
+                } catch (error) {
+                    console.error(`Error completo al obtener ejercicio ${currentQuestionNumber}:`, error);
+                    showError(error.message || "Ocurrió un problema al cargar el ejercicio.");
+                    currentQuestionNumber--; // Revertir contador si falla la carga
+                    progressCountEl.textContent = currentQuestionNumber;
+                } finally {
+                    isLoading = false; // Asegurarse de resetear estado de carga
+                }
+            }
+
+
+            function displayExercise(exercise) {
+                argumentTextEl.textContent = exercise.argument; // Usar textContent para seguridad
+                questionTextEl.textContent = exercise.question;
+
+                optionsContainerEl.innerHTML = ''; // Limpiar opciones
+                exercise.options.forEach((option, index) => {
+                    const label = document.createElement('label');
+                    const input = document.createElement('input');
+                    const span = document.createElement('span'); // Para el texto de la opción
+
+                    input.type = 'radio';
+                    input.name = 'answer';
+                    input.value = index;
+                    input.id = `option-${index}`;
+                    input.required = true;
+
+                    span.textContent = ` ${option}`; // Añadir espacio antes del texto
+
+                    label.htmlFor = `option-${index}`;
+                    label.appendChild(input);
+                    label.appendChild(span); // Añadir el span
+                    optionsContainerEl.appendChild(label);
+                });
+
+                // Mostrar/Ocultar áreas y habilitar botón
+                exerciseAreaEl.style.display = 'block';
+                feedbackAreaEl.style.display = 'none';
+                completionAreaEl.style.display = 'none';
+                hideLoadingError(); // Ocultar si había error previo
+                submitBtnEl.disabled = false;
+
+                // Foco en la primera opción
+                const firstOption = optionsContainerEl.querySelector('input[type="radio"]');
+                if (firstOption) firstOption.focus();
+            }
+
+            function handleSubmit(event) {
+                event.preventDefault();
+                if (isLoading) return;
+
+                const selectedOptionInput = optionsContainerEl.querySelector('input[name="answer"]:checked');
+
+                if (!selectedOptionInput) {
+                    // Mostrar mensaje temporal no bloqueante
+                     const tempErrorEl = document.createElement('div');
+                     tempErrorEl.textContent = '☝️ Por favor, selecciona una respuesta.';
+                     tempErrorEl.style.color = '#dc3545'; // Rojo
+                     tempErrorEl.style.marginTop = '10px';
+                     tempErrorEl.style.textAlign = 'center';
+                     tempErrorEl.style.fontWeight = '500';
+                     exerciseFormEl.appendChild(tempErrorEl);
+                     // Quitar mensaje después de un tiempo
+                     setTimeout(() => { if (tempErrorEl.parentNode) tempErrorEl.remove(); }, 2500);
+                    return;
+                }
+
+                const selectedIndex = parseInt(selectedOptionInput.value, 10);
+                const isCorrect = selectedIndex === currentExerciseData.correct_option_index;
+
+                console.log(`Ejercicio ${currentQuestionNumber} respondido. Selección: ${selectedIndex}, Correcto: ${isCorrect}`);
+                displayFeedback(isCorrect, selectedIndex);
+            }
+
+             function displayFeedback(isCorrect, selectedIndex) {
+                exerciseAreaEl.style.display = 'none';
+                feedbackAreaEl.style.display = 'block';
+                feedbackAreaEl.className = `message-area feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+                feedbackResultEl.textContent = isCorrect ? '✅ ¡Respuesta Correcta!' : '❌ Respuesta Incorrecta';
+                feedbackExplanationEl.textContent = currentExerciseData.explanation;
+
+                feedbackOptionsDisplayEl.innerHTML = ''; // Limpiar feedback anterior
+                currentExerciseData.options.forEach((option, index) => {
+                    const label = document.createElement('label');
+                    let labelClass = "";
+                    let suffix = "";
+
+                    if (index === currentExerciseData.correct_option_index) {
+                        labelClass = "correct-answer";
+                        suffix = " <strong>(Correcta)</strong>";
+                    } else if (index === selectedIndex) { // Solo marcar si es incorrecta
+                        labelClass = "user-incorrect-choice";
+                        suffix = " <em>(Tu respuesta)</em>";
+                    }
+                    label.className = labelClass;
+                    label.innerHTML = escapeHTML(option) + suffix; // Usar HTML seguro
+                    feedbackOptionsDisplayEl.appendChild(label);
+                });
+
+                submitBtnEl.disabled = true; // Deshabilitar submit
+                nextBtnEl.disabled = false;  // Habilitar next
+                nextBtnEl.focus(); // Foco en siguiente
+            }
+
+            function handleNextQuestion() {
+                 if (isLoading) return;
+
+                if (currentQuestionNumber >= MAX_QUESTIONS) {
+                    console.log("Completados los 50 ejercicios.");
+                    showCompletion();
+                } else {
+                    fetchExercise(); // Carga la siguiente
+                }
+            }
+
+             function showCompletion() {
+                exerciseAreaEl.style.display = 'none';
+                feedbackAreaEl.style.display = 'none';
+                loadingErrorAreaEl.style.display = 'none';
+                completionAreaEl.style.display = 'block';
+                document.getElementById('progress-area').style.display = 'none';
+                resetBtnMainEl.style.display = 'none'; // Ocultar reset principal
+                resetBtnCompletionEl.focus();
+            }
+
+
+            function resetApp() {
+                console.log("Reiniciando la aplicación...");
+                currentQuestionNumber = 0; // Reset lógico
+                currentExerciseData = null;
+                isLoading = false;
+
+                // Ocultar secciones, mostrar progreso y botón reset principal
+                completionAreaEl.style.display = 'none';
+                feedbackAreaEl.style.display = 'none';
+                exerciseAreaEl.style.display = 'none';
+                hideLoadingError();
+                document.getElementById('progress-area').style.display = 'block';
+                resetBtnMainEl.style.display = 'inline-block';
+                progressCountEl.textContent = '0'; // Reset visual
+
+                // Cargar la primera pregunta (incrementará a 1 dentro de fetch)
+                fetchExercise();
+            }
+
+            // Función simple para escapar HTML (prevención básica XSS)
+            function escapeHTML(str) {
+                 const div = document.createElement('div');
+                 div.appendChild(document.createTextNode(str));
+                 return div.innerHTML;
+            }
+
+            // --- Inicialización y Event Listeners ---
+            if (!exerciseFormEl || !nextBtnEl || !resetBtnCompletionEl || !resetBtnMainEl) {
+                 console.error("Error crítico: No se encontraron todos los elementos necesarios en el DOM.");
+                 // Mostrar un error al usuario directamente en la página si falla la carga inicial
+                 document.body.innerHTML = '<div class="container"><p class="error">Error crítico al cargar la aplicación. Faltan elementos HTML esenciales.</p></div>';
+                 return;
+            }
+
+            exerciseFormEl.addEventListener('submit', handleSubmit);
+            nextBtnEl.addEventListener('click', handleNextQuestion);
+            resetBtnCompletionEl.addEventListener('click', resetApp);
+            resetBtnMainEl.addEventListener('click', resetApp);
+
+            // Iniciar la aplicación
+            resetApp();
+
+        });
+        // --- FIN JAVASCRIPT ---
+    </script>
+</body>
+</html>
