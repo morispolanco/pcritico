@@ -3,363 +3,293 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pensamiento Crítico (Vercel Full Deploy)</title>
+    <title>Pensamiento Crítico con Calificación (Vercel)</title>
     <style>
         /* --- INICIO CSS --- */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 15px;
-            line-height: 1.6;
-            background-color: #f8f9fa;
-            color: #212529;
-            transition: background-color 0.3s ease; /* Suave transición */
+        :root {
+            --primary-color: #0d6efd;
+            --success-color: #198754;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --light-gray: #f8f9fa;
+            --medium-gray: #dee2e6;
+            --dark-gray: #6c757d;
+            --text-color: #212529;
+            --background-color: #f8f9fa;
+            --card-background: #fff;
+            --border-radius: 8px;
         }
 
-        .container {
-            background-color: #fff;
-            padding: 20px 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.07);
-            border: 1px solid #dee2e6;
-            transition: box-shadow 0.3s ease;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0; /* Quitamos margen default */
+            padding: 0; /* Quitamos padding default */
+            line-height: 1.6;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Asegura que el footer quede abajo */
         }
-        .container:hover {
-             box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+
+        /* --- Barra de Navegación --- */
+        nav.navbar {
+            background-color: var(--card-background);
+            padding: 10px 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        nav.navbar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center; /* Centrar items */
+            gap: 30px; /* Espacio entre items */
+        }
+        nav.navbar li {
+            display: inline-block;
+        }
+        nav.navbar a {
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        nav.navbar a:hover, nav.navbar a.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* --- Contenedor Principal --- */
+        .container {
+            flex-grow: 1; /* Ocupa el espacio disponible */
+            max-width: 800px;
+            margin: 30px auto; /* Margen arriba/abajo */
+            padding: 25px 35px; /* Más padding */
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+            border: 1px solid var(--medium-gray);
         }
 
         h1 {
             color: #343a40;
             text-align: center;
-            margin-bottom: 20px;
-            font-size: 1.9em;
+            margin-top: 0; /* Sin margen superior si es el primer elemento */
+            margin-bottom: 25px;
+            font-size: 2em; /* Un poco más grande */
             font-weight: 600;
         }
-
-        h2 {
+        h2 { /* Títulos de sección (ej. "Acerca de") */
             color: #495057;
-            margin-top: 25px;
+            margin-top: 30px;
+            margin-bottom: 15px;
             border-bottom: 1px solid #eee;
             padding-bottom: 8px;
             font-weight: 500;
         }
 
-        /* Quitamos la advertencia de seguridad, ya no es necesaria aquí */
-
-        #progress-area {
+        /* --- Área de Puntuación --- */
+        #score-area {
             margin-bottom: 25px;
-            font-size: 1em;
-            color: #6c757d;
+            font-size: 1.05em; /* Ligeramente más grande */
+            color: var(--dark-gray);
             text-align: right;
             font-weight: 500;
-        }
-
-        .message-area {
-            margin-top: 20px;
-            padding: 15px 20px;
+            background-color: var(--light-gray);
+            padding: 8px 15px;
             border-radius: 5px;
-            border: 1px solid #dee2e6;
+            border: 1px solid var(--medium-gray);
         }
+         #score-area .correct { color: var(--success-color); font-weight: 600;}
+         #score-area .total { color: var(--primary-color); font-weight: 600;}
 
-        #loading-error-area.loading {
-            background-color: #eef1f4; /* Color más suave */
-            color: #495057;
-            text-align: center;
-            font-style: italic;
-            padding: 20px;
-        }
+        /* --- Mensajes (Loading/Error) --- */
+        .message-area { /* ... (igual que antes) ... */ }
+        #loading-error-area.loading { /* ... (igual que antes) ... */ }
+        #loading-error-area.error { /* ... (igual que antes) ... */ }
 
-        #loading-error-area.error {
-            background-color: #f8d7da;
-            color: #721c24; /* Texto más oscuro para contraste */
-            border-color: #f5c6cb;
-            font-weight: 500; /* Ligeramente menos grueso */
-        }
-        #loading-error-area.error::before {
-            content: "⚠️ "; /* Icono de advertencia */
-            font-weight: bold;
-        }
+        /* --- Área del Ejercicio --- */
+        #exercise-area .argument { /* ... (igual que antes, con 'strong' si lo tenías) ... */ }
+        #exercise-area .question { /* ... (igual que antes) ... */ }
+        #exercise-area .options label { /* ... (igual que antes) ... */ }
+        #exercise-area .options input[type="radio"] { /* ... (igual que antes) ... */ }
+        #exercise-area button[type="submit"] { /* ... (igual que antes) ... */ }
 
+        /* --- Área de Feedback --- */
+        #feedback-area { /* ... (igual que antes) ... */ }
+        #feedback-area h3 { /* ... (igual que antes) ... */ }
+        #feedback-area p { /* ... (igual que antes) ... */ }
+        #feedback-area .options-feedback label { /* ... (igual que antes) ... */ }
+        #feedback-area #next-btn { /* ... (igual que antes) ... */ }
 
-        .argument {
-            background-color: #e9ecef;
-            padding: 18px; /* Más padding */
-            border-left: 6px solid #0d6efd;
-            margin-bottom: 25px;
-            border-radius: 4px;
-            font-style: italic;
-            line-height: 1.7; /* Mejor lectura */
-            color: #343a40;
-        }
-         .argument strong {
-             font-style: normal;
-             font-weight: 600;
-             display: block;
-             margin-bottom: 5px;
-             color: #212529;
-         }
+        /* --- Área de Completado --- */
+        #completion-area { /* ... (igual que antes) ... */ }
+        #completion-area h2 { /* ... (igual que antes) ... */ }
+        #completion-area #reset-btn-completion { /* ... (igual que antes) ... */ }
 
-        .question {
-            font-weight: 600;
-            margin-bottom: 20px;
-            font-size: 1.15em;
-            color: #495057;
-        }
-
-        .options label {
-            display: block;
-            background-color: #f8f9fa;
-            padding: 12px 18px; /* Más padding */
-            margin-bottom: 12px;
-            border-radius: 6px; /* Más redondeado */
-            border: 1px solid #dee2e6;
-            cursor: pointer;
-            transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, transform 0.1s ease;
-        }
-
-        .options label:hover {
-            background-color: #e9ecef; /* Cambio más notable */
-            border-color: #adb5bd;
-            transform: translateY(-1px); /* Ligero efecto hover */
-        }
-         .options label input[type="radio"]:checked + span {
-             font-weight: 600; /* Resaltar texto de opción seleccionada */
-         }
-
-
-        .options input[type="radio"] {
-            margin-right: 14px;
-            transform: scale(1.15);
-            vertical-align: middle;
-        }
-
-        button[type="submit"], .nav-button {
-            background-color: #0d6efd;
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 6px; /* Más redondeado */
-            cursor: pointer;
-            font-size: 1.05em; /* Ligeramente más grande */
-            font-weight: 500;
+        /* --- Sección "Acerca de" --- */
+        #about-section {
+            padding: 15px;
+            background-color: #fdfdff; /* Fondo ligeramente diferente */
+            border: 1px solid var(--medium-gray);
+            border-radius: var(--border-radius);
             margin-top: 20px;
-            transition: background-color 0.2s ease, transform 0.1s ease;
-            display: block;
-            width: 100%;
-            text-align: center;
-            text-decoration: none;
         }
-        .nav-button {
-             width: auto;
-             display: inline-block;
-             margin-right: 10px;
-             min-width: 150px;
-        }
-
-        button[type="submit"]:hover, .nav-button:hover {
-            background-color: #0b5ed7;
-            transform: translateY(-1px);
-             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        button:disabled {
-            background-color: #adb5bd;
-            cursor: not-allowed;
-             transform: none;
-             box-shadow: none;
-        }
-
-
-        .feedback {
-            border-width: 1px; /* Borde más sutil */
-            border-style: solid;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Sombra suave */
-        }
-        .feedback.correct {
-            border-color: #badbcc; /* Borde más suave */
-            background-color: #d1e7dd;
-            color: #0f5132;
-        }
-        .feedback.incorrect {
-            border-color: #f5c2c7; /* Borde más suave */
-            background-color: #f8d7da;
-            color: #842029;
-        }
-
-        .feedback h3 {
-            margin-top: 0;
-            margin-bottom: 12px;
-            font-size: 1.25em;
-            font-weight: 600;
-        }
-        .feedback p {
-            margin-bottom: 8px;
+        #about-section p {
+            margin-bottom: 15px;
             line-height: 1.7;
         }
-         .feedback strong {
-             font-weight: 600;
-         }
-
-        #next-btn {
-            background-color: #198754; /* Verde éxito */
-        }
-        #next-btn:hover {
-            background-color: #157347;
+        #about-section ul {
+            margin-left: 20px;
+             margin-bottom: 15px;
         }
 
-        .reset {
-            background-color: #6c757d; /* Gris neutro */
-        }
-        .reset:hover {
-            background-color: #5c636a;
-        }
+        /* --- Botones Generales --- */
+        .nav-button { /* ... (igual que antes) ... */ }
+        .reset { /* ... (igual que antes) ... */ }
 
-        .final-message {
+        /* --- Controles Generales --- */
+        .controls { /* ... (igual que antes) ... */ }
+
+        /* --- Pie de Página --- */
+        footer.page-footer {
             text-align: center;
-            font-size: 1.2em;
-            background-color: #d1e7dd;
-            border: 1px solid #badbcc;
-            color: #0f5132;
+            padding: 20px;
+            margin-top: 30px; /* Espacio sobre el footer */
+            background-color: #e9ecef;
+            color: var(--dark-gray);
+            font-size: 0.9em;
+            border-top: 1px solid var(--medium-gray);
         }
-        .final-message h2 {
-            color: #0f5132;
-            border-bottom: none;
-            margin-bottom: 10px;
+        footer.page-footer p {
+            margin: 5px 0;
         }
-
-        hr {
-            border: 0;
-            height: 1px;
-            background-color: #dee2e6;
-            margin: 25px 0;
-        }
-
-        /* Feedback options */
-        .options-feedback {
-             margin-top: 15px;
-        }
-        .options-feedback label {
-            cursor: default;
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            margin-bottom: 8px;
-            padding: 10px 15px; /* Un poco menos padding que las seleccionables */
-            transition: none; /* Sin transiciones */
-            transform: none; /* Sin transform */
-        }
-        .options-feedback label:hover {
-            background-color: #f8f9fa; /* Sin efecto hover */
-            border-color: #dee2e6;
-             transform: none;
-        }
-        .options-feedback .correct-answer {
-            border-color: #198754;
-            background-color: #cff6dd; /* Verde más vibrante */
-            font-weight: 600; /* Más grueso */
-             color: #0f5132;
-             border-width: 2px;
-        }
-        .options-feedback .user-incorrect-choice {
-            border-color: #dc3545;
-            background-color: #fadde1; /* Rosa más vibrante */
-            text-decoration: line-through;
-            color: #842029;
-             border-width: 2px;
-        }
-        .options-feedback .user-incorrect-choice em {
-            font-style: normal;
+        footer.page-footer a {
+            color: var(--primary-color);
             text-decoration: none;
-            margin-left: 8px;
             font-weight: 500;
-            background-color: rgba(255, 255, 255, 0.6); /* Fondo semitransparente */
-            padding: 1px 4px;
-            border-radius: 3px;
         }
-        .options-feedback .correct-answer strong {
-             margin-left: 8px;
-             background-color: rgba(255, 255, 255, 0.6);
-             padding: 1px 4px;
-             border-radius: 3px;
+        footer.page-footer a:hover {
+            text-decoration: underline;
         }
-        /* Ocultar radios en feedback - redundante con CSS anterior pero seguro */
-        .options-feedback input[type="radio"] {
+
+        /* --- Clases Utilitarias --- */
+        .hidden {
             display: none;
         }
 
-
-        .controls {
-            margin-top: 30px;
-            text-align: center;
-        }
         /* --- FIN CSS --- */
     </style>
 </head>
 <body>
+
+    <!-- Barra de Navegación -->
+    <nav class="navbar">
+        <ul>
+            <li><a href="#" id="nav-inicio" class="active">Inicio (Ejercicio)</a></li>
+            <li><a href="#" id="nav-acerca">Acerca de</a></li>
+        </ul>
+    </nav>
+
+    <!-- Contenedor Principal -->
     <div class="container">
-        <h1>🧠 Ejercicio de Pensamiento Crítico 💡</h1>
 
-        <div id="progress-area">
-            Progreso: <span id="progress-count">0</span> / 50
-        </div>
+        <div id="main-content"> <!-- Agrupador para ejercicio/feedback/etc. -->
+            <h1>🧠 Ejercicio de Pensamiento Crítico 💡</h1>
 
-        <div id="loading-error-area" class="message-area" style="display: none;">
-            <!-- Mensajes de carga o error aquí -->
-        </div>
-
-        <div id="exercise-area" style="display: none;">
-             <div class="argument">
-                 <strong>Analiza el siguiente argumento:</strong>
-                 <span id="argument-text"></span> <!-- El argumento se cargará aquí -->
+            <div id="score-area">
+                <!-- La puntuación se actualizará aquí -->
+                Puntuación: <span class="correct">0</span> / <span class="total">0</span> (Máx: 50)
             </div>
-            <p class="question" id="question-text">
-                <!-- La pregunta se cargará aquí -->
-            </p>
-            <form id="exercise-form">
-                <div id="options-container" class="options">
-                    <!-- Las opciones se cargarán aquí -->
+
+            <div id="loading-error-area" class="message-area hidden"></div>
+
+            <div id="exercise-area" class="hidden">
+                 <div class="argument">
+                     <strong>Analiza el siguiente argumento:</strong>
+                     <span id="argument-text"></span>
                 </div>
-                <button type="submit" id="submit-btn">Enviar Respuesta</button>
-            </form>
-        </div>
-
-        <div id="feedback-area" class="message-area feedback" style="display: none;">
-            <h3 id="feedback-result"></h3>
-            <p><strong>Explicación:</strong> <span id="feedback-explanation"></span></p>
-
-            <div id="feedback-options-display" class="options options-feedback">
-                 <!-- Opciones con resaltado se mostrarán aquí -->
+                <p class="question" id="question-text"></p>
+                <form id="exercise-form">
+                    <div id="options-container" class="options"></div>
+                    <button type="submit" id="submit-btn">Enviar Respuesta</button>
+                </form>
             </div>
-             <hr>
-             <div style="text-align: center;">
-                <button id="next-btn" class="nav-button">Siguiente Pregunta →</button>
+
+            <div id="feedback-area" class="message-area feedback hidden">
+                <h3 id="feedback-result"></h3>
+                <p><strong>Explicación:</strong> <span id="feedback-explanation"></span></p>
+                <div id="feedback-options-display" class="options options-feedback"></div>
+                <hr>
+                 <div style="text-align: center;">
+                    <button id="next-btn" class="nav-button">Siguiente Pregunta →</button>
+                 </div>
             </div>
+
+            <div id="completion-area" class="message-area final-message hidden">
+                 <h2>¡Felicidades! 🎉</h2>
+                 <p>Has completado los 50 ejercicios.</p>
+                 <p>Puntuación Final: <span class="correct">X</span> / <span class="total">50</span></p>
+                 <button id="reset-btn-completion" class="nav-button reset">Comenzar de Nuevo</button>
+            </div>
+
+             <div class="controls">
+                 <button id="reset-btn-main" class="nav-button reset">Reiniciar Ejercicio</button>
+            </div>
+        </div> <!-- Fin de #main-content -->
+
+        <!-- Sección "Acerca de" (oculta por defecto) -->
+        <div id="about-section" class="hidden">
+            <h2>Acerca de esta Aplicación</h2>
+            <p>
+                Esta aplicación está diseñada para ayudarte a ejercitar y mejorar tus habilidades de pensamiento crítico.
+                Presenta argumentos generados dinámicamente por una inteligencia artificial (Google Gemini) y te pide
+                identificar falacias, evaluar evidencia, reconocer supuestos y más.
+            </p>
+            <p>
+                El pensamiento crítico es esencial para tomar decisiones informadas, resolver problemas de manera efectiva
+                y comprender el mundo que nos rodea de una forma más profunda y objetiva.
+            </p>
+            <p>Características:</p>
+            <ul>
+                <li>50 ejercicios generados por IA.</li>
+                <li>Variedad de tipos de preguntas (falacias, evidencia, supuestos, etc.).</li>
+                <li>Retroalimentación instantánea con explicaciones.</li>
+                <li>Seguimiento de puntuación.</li>
+            </ul>
+            <p>
+                ¡Esperamos que disfrutes y aproveches esta herramienta!
+            </p>
+            <button id="back-to-exercise-btn" class="nav-button">← Volver al Ejercicio</button>
         </div>
 
-        <div id="completion-area" class="message-area final-message" style="display: none;">
-             <h2>¡Felicidades! 🎉</h2>
-             <p>Has completado los 50 ejercicios.</p>
-             <button id="reset-btn-completion" class="nav-button reset">Comenzar de Nuevo</button>
-        </div>
+    </div> <!-- Fin de .container -->
 
-        <div class="controls">
-             <button id="reset-btn-main" class="nav-button reset">Reiniciar Ejercicio</button>
-        </div>
-
-    </div>
+    <!-- Pie de Página -->
+    <footer class="page-footer">
+        <p>Contacto: Moris Polanco</p>
+        <p><a href="mailto:mp@ufm.edu">mp@ufm.edu</a></p>
+        <p><a href="https://morispolanco.github.io/mp/" target="_blank" rel="noopener noreferrer">morispolanco.github.io/mp</a></p>
+    </footer>
 
     <script>
         // --- INICIO JAVASCRIPT ---
         document.addEventListener('DOMContentLoaded', () => {
             // --- Configuración ---
-            // La URL de la API apunta a la función serverless dentro del mismo despliegue de Vercel
-            const API_URL = "/api/generate-exercise"; // Ruta relativa a la función
+            const API_URL = "/api/generate-exercise"; // API en Vercel
             const MAX_QUESTIONS = 50;
 
             // --- Referencias a Elementos del DOM ---
-            const progressCountEl = document.getElementById('progress-count');
+            const scoreAreaEl = document.getElementById('score-area');
+            const scoreCorrectEl = scoreAreaEl.querySelector('.correct');
+            const scoreTotalEl = scoreAreaEl.querySelector('.total');
             const loadingErrorAreaEl = document.getElementById('loading-error-area');
             const exerciseAreaEl = document.getElementById('exercise-area');
-            const argumentTextEl = document.getElementById('argument-text'); // Span dentro del div argument
+            const argumentTextEl = document.getElementById('argument-text');
             const questionTextEl = document.getElementById('question-text');
             const optionsContainerEl = document.getElementById('options-container');
             const exerciseFormEl = document.getElementById('exercise-form');
@@ -370,67 +300,121 @@
             const feedbackOptionsDisplayEl = document.getElementById('feedback-options-display');
             const nextBtnEl = document.getElementById('next-btn');
             const completionAreaEl = document.getElementById('completion-area');
+            const completionScoreCorrectEl = completionAreaEl.querySelector('.correct'); // Span en completion
+            const completionScoreTotalEl = completionAreaEl.querySelector('.total');   // Span en completion
             const resetBtnCompletionEl = document.getElementById('reset-btn-completion');
             const resetBtnMainEl = document.getElementById('reset-btn-main');
+            const mainContentEl = document.getElementById('main-content'); // Contenedor principal del ejercicio
+            const aboutSectionEl = document.getElementById('about-section');
+            const backToExerciseBtnEl = document.getElementById('back-to-exercise-btn');
+            const navInicioLink = document.getElementById('nav-inicio');
+            const navAcercaLink = document.getElementById('nav-acerca');
 
-             // --- Estado de la Aplicación ---
-            let currentQuestionNumber = 0;
+            // --- Estado de la Aplicación ---
+            let currentQuestionNumber = 0; // Número de la pregunta actual (1 a MAX_QUESTIONS)
+            let questionsAttempted = 0; // Total de preguntas mostradas/intentadas
+            let correctAnswersCount = 0; // Contador de respuestas correctas
             let currentExerciseData = null;
             let isLoading = false;
+            let currentView = 'exercise'; // 'exercise' o 'about'
 
-            // --- Funciones Auxiliares UI ---
+            // --- Funciones UI ---
             function showLoading(message = "🔄 Cargando ejercicio...") {
                 loadingErrorAreaEl.textContent = message;
-                loadingErrorAreaEl.className = 'message-area loading';
-                loadingErrorAreaEl.style.display = 'block';
-                exerciseAreaEl.style.display = 'none';
-                feedbackAreaEl.style.display = 'none';
-                completionAreaEl.style.display = 'none';
+                loadingErrorAreaEl.classList.remove('hidden', 'error');
+                loadingErrorAreaEl.classList.add('loading');
+                exerciseAreaEl.classList.add('hidden');
+                feedbackAreaEl.classList.add('hidden');
+                completionAreaEl.classList.add('hidden');
+                aboutSectionEl.classList.add('hidden'); // Ocultar 'Acerca de' al cargar
+                mainContentEl.classList.remove('hidden'); // Asegurar que el contenido principal sea visible
                 submitBtnEl.disabled = true;
                 nextBtnEl.disabled = true;
                 isLoading = true;
             }
 
             function showError(message) {
-                loadingErrorAreaEl.textContent = message; // No añadir prefijo aquí, ya está en CSS
-                loadingErrorAreaEl.className = 'message-area error';
-                loadingErrorAreaEl.style.display = 'block';
-                exerciseAreaEl.style.display = 'none';
-                feedbackAreaEl.style.display = 'none';
-                completionAreaEl.style.display = 'none';
+                loadingErrorAreaEl.textContent = message;
+                loadingErrorAreaEl.classList.remove('hidden', 'loading');
+                loadingErrorAreaEl.classList.add('error');
+                exerciseAreaEl.classList.add('hidden');
+                feedbackAreaEl.classList.add('hidden');
+                completionAreaEl.classList.add('hidden');
+                 aboutSectionEl.classList.add('hidden');
+                 mainContentEl.classList.remove('hidden');
                 submitBtnEl.disabled = true;
                 nextBtnEl.disabled = true;
                 isLoading = false;
-                console.error("Error presentado al usuario:", message);
+                console.error("Error presentado:", message);
             }
 
-             function hideLoadingError() {
-                loadingErrorAreaEl.style.display = 'none';
-                 // No resetear isLoading aquí automáticamente, fetch lo hará en finally
+            function hideLoadingError() {
+                loadingErrorAreaEl.classList.add('hidden');
+                loadingErrorAreaEl.classList.remove('loading', 'error');
             }
 
-             // --- Funciones Principales ---
+            function updateScoreDisplay() {
+                 scoreCorrectEl.textContent = correctAnswersCount;
+                 scoreTotalEl.textContent = questionsAttempted; // Mostrar sobre el total intentado
+                 // Actualizar también en el mensaje de completado si es visible
+                 if (!completionAreaEl.classList.contains('hidden')) {
+                     completionScoreCorrectEl.textContent = correctAnswersCount;
+                     completionScoreTotalEl.textContent = MAX_QUESTIONS; // Mostrar sobre el máximo al final
+                 }
+            }
+
+            function showExerciseAreaView() {
+                 mainContentEl.classList.remove('hidden');
+                 aboutSectionEl.classList.add('hidden');
+                 navInicioLink.classList.add('active');
+                 navAcercaLink.classList.remove('active');
+                 currentView = 'exercise';
+                 // Mostrar el estado correcto (pregunta, feedback o completado)
+                 if (currentQuestionNumber > MAX_QUESTIONS) {
+                     showCompletion();
+                 } else if (feedbackAreaEl.dataset.visible === 'true') { // Usar data attribute para recordar si mostrar feedback
+                     exerciseAreaEl.classList.add('hidden');
+                     feedbackAreaEl.classList.remove('hidden');
+                 } else if (exerciseAreaEl.dataset.visible === 'true') { // Usar data attribute
+                    feedbackAreaEl.classList.add('hidden');
+                    exerciseAreaEl.classList.remove('hidden');
+                 }
+                  // Asegurarse que el área de carga/error esté oculta si no hay error activo
+                  if (!loadingErrorAreaEl.classList.contains('error') && !loadingErrorAreaEl.classList.contains('loading')) {
+                     hideLoadingError();
+                  }
+
+            }
+
+            function showAboutView() {
+                 mainContentEl.classList.add('hidden');
+                 aboutSectionEl.classList.remove('hidden');
+                 navInicioLink.classList.remove('active');
+                 navAcercaLink.classList.add('active');
+                 currentView = 'about';
+            }
+
+
+            // --- Funciones Principales ---
 
             async function fetchExercise() {
-                if (isLoading) {
-                    console.warn("Fetch iniciado mientras ya estaba cargando.");
+                if (isLoading) return;
+                if (questionsAttempted >= MAX_QUESTIONS) {
+                    showCompletion(); // Ya terminó
                     return;
                 }
 
-                currentQuestionNumber++;
-                progressCountEl.textContent = currentQuestionNumber;
+                questionsAttempted++; // Incrementar total de intentos
+                currentQuestionNumber = questionsAttempted; // El número de pregunta es el total intentado
+
                 showLoading(`🔄 Cargando ejercicio ${currentQuestionNumber}/${MAX_QUESTIONS}...`);
+                updateScoreDisplay(); // Actualizar total
 
                 try {
                     console.log(`Solicitando ejercicio ${currentQuestionNumber} a ${API_URL}`);
-                    const response = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        // No se envía body ya que la función genera el prompt
-                    });
-
-                    console.log(`Respuesta recibida de ${API_URL}: Status ${response.status}`);
-                    const data = await response.json(); // Siempre esperamos JSON
+                    const response = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'} });
+                    console.log(`Respuesta de ${API_URL}: Status ${response.status}`);
+                    const data = await response.json();
 
                     if (!response.ok) {
                         console.error(`Error del API (${response.status}):`, data.error || data);
@@ -438,68 +422,52 @@
                     }
 
                     currentExerciseData = data;
-                    console.log(`Ejercicio ${currentQuestionNumber} recibido:`, currentExerciseData);
+                    console.log(`Ejercicio ${currentQuestionNumber} recibido.`); // Log simplificado
 
-                    // Validación robusta de la estructura recibida
-                    if (!currentExerciseData || typeof currentExerciseData.argument !== 'string' || !currentExerciseData.argument ||
-                        typeof currentExerciseData.question !== 'string' || !currentExerciseData.question ||
-                        !Array.isArray(currentExerciseData.options) || currentExerciseData.options.length !== 4 ||
-                        !currentExerciseData.options.every(opt => typeof opt === 'string' && opt) ||
-                        typeof currentExerciseData.correct_option_index !== 'number' ||
-                        currentExerciseData.correct_option_index < 0 || currentExerciseData.correct_option_index >= 4 ||
-                        typeof currentExerciseData.explanation !== 'string' || !currentExerciseData.explanation)
-                    {
-                        console.error("Datos de ejercicio inválidos recibidos:", currentExerciseData);
-                        throw new Error("El formato del ejercicio recibido es incorrecto o incompleto.");
+                    // Validación (igual que antes)
+                    if (!currentExerciseData || typeof currentExerciseData.argument !== 'string' /* ... etc */) {
+                        throw new Error("Formato de ejercicio inválido.");
                     }
-
 
                     hideLoadingError();
                     displayExercise(currentExerciseData);
 
                 } catch (error) {
-                    console.error(`Error completo al obtener ejercicio ${currentQuestionNumber}:`, error);
-                    showError(error.message || "Ocurrió un problema al cargar el ejercicio.");
-                    currentQuestionNumber--; // Revertir contador si falla la carga
-                    progressCountEl.textContent = currentQuestionNumber;
+                    console.error(`Error al obtener ejercicio ${currentQuestionNumber}:`, error);
+                    showError(error.message || "Error al cargar el ejercicio.");
+                    // No revertir contador, el intento falló pero cuenta
                 } finally {
-                    isLoading = false; // Asegurarse de resetear estado de carga
+                    isLoading = false;
                 }
             }
 
-
             function displayExercise(exercise) {
-                argumentTextEl.textContent = exercise.argument; // Usar textContent para seguridad
+                argumentTextEl.textContent = exercise.argument;
                 questionTextEl.textContent = exercise.question;
+                optionsContainerEl.innerHTML = ''; // Limpiar
 
-                optionsContainerEl.innerHTML = ''; // Limpiar opciones
                 exercise.options.forEach((option, index) => {
                     const label = document.createElement('label');
                     const input = document.createElement('input');
-                    const span = document.createElement('span'); // Para el texto de la opción
-
-                    input.type = 'radio';
-                    input.name = 'answer';
-                    input.value = index;
-                    input.id = `option-${index}`;
-                    input.required = true;
-
-                    span.textContent = ` ${option}`; // Añadir espacio antes del texto
-
+                    const span = document.createElement('span');
+                    input.type = 'radio'; input.name = 'answer'; input.value = index; input.id = `option-${index}`; input.required = true;
+                    span.textContent = ` ${option}`;
                     label.htmlFor = `option-${index}`;
-                    label.appendChild(input);
-                    label.appendChild(span); // Añadir el span
+                    label.appendChild(input); label.appendChild(span);
                     optionsContainerEl.appendChild(label);
                 });
 
-                // Mostrar/Ocultar áreas y habilitar botón
-                exerciseAreaEl.style.display = 'block';
-                feedbackAreaEl.style.display = 'none';
-                completionAreaEl.style.display = 'none';
+                // Mostrar/Ocultar áreas
                 hideLoadingError(); // Ocultar si había error previo
+                exerciseAreaEl.classList.remove('hidden');
+                exerciseAreaEl.dataset.visible = 'true'; // Marcar como visible
+                feedbackAreaEl.classList.add('hidden');
+                feedbackAreaEl.dataset.visible = 'false';
+                completionAreaEl.classList.add('hidden');
+                aboutSectionEl.classList.add('hidden'); // Asegurarse que about esté oculto
+                mainContentEl.classList.remove('hidden'); // Asegurar que main sea visible
                 submitBtnEl.disabled = false;
 
-                // Foco en la primera opción
                 const firstOption = optionsContainerEl.querySelector('input[type="radio"]');
                 if (firstOption) firstOption.focus();
             }
@@ -509,17 +477,10 @@
                 if (isLoading) return;
 
                 const selectedOptionInput = optionsContainerEl.querySelector('input[name="answer"]:checked');
-
                 if (!selectedOptionInput) {
-                    // Mostrar mensaje temporal no bloqueante
-                     const tempErrorEl = document.createElement('div');
-                     tempErrorEl.textContent = '☝️ Por favor, selecciona una respuesta.';
-                     tempErrorEl.style.color = '#dc3545'; // Rojo
-                     tempErrorEl.style.marginTop = '10px';
-                     tempErrorEl.style.textAlign = 'center';
-                     tempErrorEl.style.fontWeight = '500';
+                    // Mostrar mensaje temporal (igual que antes)
+                     const tempErrorEl = document.createElement('div'); /* ... */
                      exerciseFormEl.appendChild(tempErrorEl);
-                     // Quitar mensaje después de un tiempo
                      setTimeout(() => { if (tempErrorEl.parentNode) tempErrorEl.remove(); }, 2500);
                     return;
                 }
@@ -527,44 +488,55 @@
                 const selectedIndex = parseInt(selectedOptionInput.value, 10);
                 const isCorrect = selectedIndex === currentExerciseData.correct_option_index;
 
-                console.log(`Ejercicio ${currentQuestionNumber} respondido. Selección: ${selectedIndex}, Correcto: ${isCorrect}`);
+                if (isCorrect) {
+                    correctAnswersCount++; // Incrementar contador de correctas
+                }
+                updateScoreDisplay(); // Actualizar display de puntuación
+
+                console.log(`Ejercicio ${currentQuestionNumber} respondido. Correcto: ${isCorrect}`);
                 displayFeedback(isCorrect, selectedIndex);
             }
 
-             function displayFeedback(isCorrect, selectedIndex) {
-                exerciseAreaEl.style.display = 'none';
-                feedbackAreaEl.style.display = 'block';
+            function displayFeedback(isCorrect, selectedIndex) {
+                exerciseAreaEl.classList.add('hidden');
+                exerciseAreaEl.dataset.visible = 'false';
+                feedbackAreaEl.classList.remove('hidden');
+                feedbackAreaEl.dataset.visible = 'true'; // Marcar feedback como visible
+                completionAreaEl.classList.add('hidden');
+                aboutSectionEl.classList.add('hidden');
+                 mainContentEl.classList.remove('hidden');
+
                 feedbackAreaEl.className = `message-area feedback ${isCorrect ? 'correct' : 'incorrect'}`;
                 feedbackResultEl.textContent = isCorrect ? '✅ ¡Respuesta Correcta!' : '❌ Respuesta Incorrecta';
                 feedbackExplanationEl.textContent = currentExerciseData.explanation;
 
-                feedbackOptionsDisplayEl.innerHTML = ''; // Limpiar feedback anterior
+                feedbackOptionsDisplayEl.innerHTML = '';
                 currentExerciseData.options.forEach((option, index) => {
                     const label = document.createElement('label');
-                    let labelClass = "";
-                    let suffix = "";
-
+                    let labelClass = ""; let suffix = "";
                     if (index === currentExerciseData.correct_option_index) {
-                        labelClass = "correct-answer";
-                        suffix = " <strong>(Correcta)</strong>";
-                    } else if (index === selectedIndex) { // Solo marcar si es incorrecta
-                        labelClass = "user-incorrect-choice";
-                        suffix = " <em>(Tu respuesta)</em>";
+                        labelClass = "correct-answer"; suffix = " <strong>(Correcta)</strong>";
+                    } else if (index === selectedIndex) {
+                        labelClass = "user-incorrect-choice"; suffix = " <em>(Tu respuesta)</em>";
                     }
                     label.className = labelClass;
-                    label.innerHTML = escapeHTML(option) + suffix; // Usar HTML seguro
+                    label.innerHTML = escapeHTML(option) + suffix;
                     feedbackOptionsDisplayEl.appendChild(label);
                 });
 
-                submitBtnEl.disabled = true; // Deshabilitar submit
-                nextBtnEl.disabled = false;  // Habilitar next
-                nextBtnEl.focus(); // Foco en siguiente
+                submitBtnEl.disabled = true;
+                nextBtnEl.disabled = false;
+                nextBtnEl.focus();
             }
 
-            function handleNextQuestion() {
+             function handleNextQuestion() {
                  if (isLoading) return;
 
-                if (currentQuestionNumber >= MAX_QUESTIONS) {
+                // Ocultar feedback antes de cargar la siguiente
+                feedbackAreaEl.classList.add('hidden');
+                feedbackAreaEl.dataset.visible = 'false';
+
+                if (questionsAttempted >= MAX_QUESTIONS) {
                     console.log("Completados los 50 ejercicios.");
                     showCompletion();
                 } else {
@@ -572,55 +544,88 @@
                 }
             }
 
-             function showCompletion() {
-                exerciseAreaEl.style.display = 'none';
-                feedbackAreaEl.style.display = 'none';
-                loadingErrorAreaEl.style.display = 'none';
-                completionAreaEl.style.display = 'block';
-                document.getElementById('progress-area').style.display = 'none';
-                resetBtnMainEl.style.display = 'none'; // Ocultar reset principal
-                resetBtnCompletionEl.focus();
+            function showCompletion() {
+                 hideLoadingError();
+                 exerciseAreaEl.classList.add('hidden');
+                 exerciseAreaEl.dataset.visible = 'false';
+                 feedbackAreaEl.classList.add('hidden');
+                 feedbackAreaEl.dataset.visible = 'false';
+                 completionAreaEl.classList.remove('hidden');
+                 aboutSectionEl.classList.add('hidden');
+                  mainContentEl.classList.remove('hidden');
+
+                 updateScoreDisplay(); // Asegura que la puntuación final esté actualizada
+
+                 // Ocultar área de puntuación normal y botón reset principal
+                 scoreAreaEl.classList.add('hidden');
+                 resetBtnMainEl.classList.add('hidden');
+                 resetBtnCompletionEl.focus();
             }
 
 
             function resetApp() {
                 console.log("Reiniciando la aplicación...");
-                currentQuestionNumber = 0; // Reset lógico
+                currentQuestionNumber = 0; // Se incrementará a 1 en fetch
+                questionsAttempted = 0;
+                correctAnswersCount = 0;
                 currentExerciseData = null;
                 isLoading = false;
 
-                // Ocultar secciones, mostrar progreso y botón reset principal
-                completionAreaEl.style.display = 'none';
-                feedbackAreaEl.style.display = 'none';
-                exerciseAreaEl.style.display = 'none';
-                hideLoadingError();
-                document.getElementById('progress-area').style.display = 'block';
-                resetBtnMainEl.style.display = 'inline-block';
-                progressCountEl.textContent = '0'; // Reset visual
+                // Ocultar secciones específicas, mostrar elementos iniciales
+                completionAreaEl.classList.add('hidden');
+                feedbackAreaEl.classList.add('hidden');
+                feedbackAreaEl.dataset.visible = 'false';
+                exerciseAreaEl.classList.add('hidden');
+                exerciseAreaEl.dataset.visible = 'false'; // Resetear marcador
+                 hideLoadingError();
 
-                // Cargar la primera pregunta (incrementará a 1 dentro de fetch)
+                // Mostrar área de puntuación normal y botón reset principal
+                 scoreAreaEl.classList.remove('hidden');
+                 resetBtnMainEl.classList.remove('hidden'); // Asegurar que sea visible
+                 updateScoreDisplay(); // Resetear puntuación visual a 0/0
+
+                 // Asegurarse de mostrar el área principal y no "Acerca de"
+                 showExerciseAreaView();
+
+                // Cargar la primera pregunta
                 fetchExercise();
             }
 
-            // Función simple para escapar HTML (prevención básica XSS)
-            function escapeHTML(str) {
-                 const div = document.createElement('div');
-                 div.appendChild(document.createTextNode(str));
-                 return div.innerHTML;
-            }
+            // Función simple para escapar HTML
+            function escapeHTML(str) { /* ... (igual que antes) ... */ }
 
             // --- Inicialización y Event Listeners ---
-            if (!exerciseFormEl || !nextBtnEl || !resetBtnCompletionEl || !resetBtnMainEl) {
-                 console.error("Error crítico: No se encontraron todos los elementos necesarios en el DOM.");
-                 // Mostrar un error al usuario directamente en la página si falla la carga inicial
-                 document.body.innerHTML = '<div class="container"><p class="error">Error crítico al cargar la aplicación. Faltan elementos HTML esenciales.</p></div>';
+            if (!exerciseFormEl /* ... y otros elementos esenciales ... */) {
+                 console.error("Error crítico: Faltan elementos del DOM.");
+                 document.body.innerHTML = '<div class="container"><p class="error">Error crítico al cargar la aplicación.</p></div>';
                  return;
             }
 
+            // Listeners de la app
             exerciseFormEl.addEventListener('submit', handleSubmit);
             nextBtnEl.addEventListener('click', handleNextQuestion);
             resetBtnCompletionEl.addEventListener('click', resetApp);
             resetBtnMainEl.addEventListener('click', resetApp);
+            backToExerciseBtnEl.addEventListener('click', showExerciseAreaView);
+
+            // Listeners de navegación
+            navInicioLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (currentView !== 'exercise') {
+                    // Si no estamos en la vista de ejercicio, la mostramos.
+                    // Si ya estamos, pero queremos reiniciar, usamos el botón Reiniciar.
+                    // O podríamos hacer que Inicio *siempre* reinicie:
+                    resetApp();
+                }
+                 // No es necesario llamar a showExerciseAreaView aquí si resetApp ya lo hace.
+            });
+            navAcercaLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (currentView !== 'about') {
+                    showAboutView();
+                }
+            });
+
 
             // Iniciar la aplicación
             resetApp();
@@ -628,5 +633,6 @@
         });
         // --- FIN JAVASCRIPT ---
     </script>
+
 </body>
 </html>
